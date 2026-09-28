@@ -97,6 +97,10 @@ body {
   color: #fff;
   display: flex;
   flex-direction: column;
+  overflow: visible;
+}
+.hero img {
+  border-radius: 28px;
 }
 .hero svg {
   position: absolute;
@@ -358,6 +362,35 @@ textarea:focus-visible {
 .notes textarea::placeholder {
   color: rgba(255, 255, 255, 0.7);
 }
+.search-suggestion-container {
+  position: absolute;
+  background-color: white;
+  top: calc(100% + 8px);
+  border-radius: 28px;
+  left: 0;
+  right: 0;
+  padding: 16px 0;
+  overflow: hidden;
+  display: none;
+}
+.search-suggestion-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 208px;
+  overflow-y: scroll;
+}
+.search-suggestion-item {
+  padding: 10px 24px;
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--dark);
+  font-weight: 500;
+}
+.search-suggestion-item:hover {
+  background-color: #f0f0f0;
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .blades {
     transform-origin: 330px 118px;
