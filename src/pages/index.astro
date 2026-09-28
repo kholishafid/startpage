@@ -1,0 +1,258 @@
+---
+import "../styles/global.css";
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <title>Astro</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <main class="grid">
+      <section class="tile clock" aria-label="Clock">
+        <div class="small" id="greet">
+          Good morning
+        </div>
+        <div>
+          <div class="time" id="time">
+            --<span>:</span>--
+          </div>
+          <div class="date" id="date"></div>
+        </div>
+      </section>
+
+      <section class="tile hero">
+        <svg
+          viewBox="0 0 700 420"
+          preserveAspectRatio="xMidYMid slice"
+          aria-hidden="true"
+        >
+          <ellipse cx="560" cy="86" rx="70" ry="16" fill="#fff" opacity=".85" />
+          <ellipse cx="600" cy="74" rx="46" ry="14" fill="#fff" opacity=".9" />
+          <path d="M0 330 Q170 285 340 315 T700 300 V420 H0Z" fill="#7fa64a" />
+          <path d="M0 360 Q200 320 380 350 T700 340 V420 H0Z" fill="#5f8f37" />
+          <path d="M0 395 Q220 365 420 388 T700 380 V420 H0Z" fill="#4a7a2b" />
+          <path d="M326 118 h8 l4 236 h-16z" fill="#4d5560" />
+          <g class="blades" fill="#3f4650">
+            <path d="M330 118 L322 22 L338 22Z" />
+            <path d="M330 118 L412 168 L404 178Z" />
+            <path d="M330 118 L248 168 L256 178Z" />
+          </g>
+          <circle cx="330" cy="118" r="9" fill="#2d333b" />
+          <g fill="#f2b632">
+            <circle cx="90" cy="372" r="5" />
+            <circle cx="150" cy="384" r="4" />
+            <circle cx="240" cy="366" r="5" />
+            <circle cx="470" cy="376" r="4" />
+            <circle cx="560" cy="362" r="5" />
+          </g>
+        </svg>
+        <div class="txt">
+          <div class="bar"></div>
+          <h1 id="headline">
+            Good morning.
+            <br />
+            <span>What are you looking for?</span>
+          </h1>
+          <p>Search the web or type an address.</p>
+        </div>
+        <form class="search" id="sf" role="search">
+          <input
+            id="q"
+            type="text"
+            placeholder="Search or enter address"
+            autocomplete="off"
+            autofocus
+            aria-label="Search"
+          />
+          <button type="submit">Search</button>
+        </form>
+      </section>
+
+      <section class="tile stats" aria-label="Progress">
+        <div class="stat">
+          <b id="dayp">0%</b>
+          <span>of today gone</span>
+          <div class="meter">
+            <i id="daym"></i>
+          </div>
+        </div>
+        <div class="stat">
+          <b id="yearp">0%</b>
+          <span>of the year gone</span>
+          <div class="meter">
+            <i id="yearm"></i>
+          </div>
+        </div>
+      </section>
+
+      <section class="tile focus">
+        <div class="top">
+          <span>Today</span>
+          <span id="wk"></span>
+        </div>
+        <label for="focus">My focus today</label>
+        <input
+          id="focus"
+          type="text"
+          placeholder="Write one thing"
+          maxlength="60"
+        />
+      </section>
+
+      <nav class="tile links" aria-label="Shortcuts">
+        <div class="head">
+          <b>Shortcuts</b>
+          <span>Open in this tab</span>
+        </div>
+        <ul>
+          <li>
+            <a href="https://mail.google.com">
+              <i style="background: #d64b3c">M</i>Mail
+            </a>
+          </li>
+          <li>
+            <a href="https://calendar.google.com">
+              <i style="background: #3a78e0">C</i>Calendar
+            </a>
+          </li>
+          <li>
+            <a href="https://drive.google.com">
+              <i style="background: #2f9e5b">D</i>Drive
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com">
+              <i style="background: #22252b">G</i>GitHub
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <section class="tile timer" aria-label="Focus timer">
+        <div class="small">Focus timer</div>
+        <div class="t" id="tt">
+          25:00
+        </div>
+        <button id="tb" type="button">
+          Start
+        </button>
+      </section>
+
+      <section class="tile notes">
+        <div class="small">Quick note</div>
+        <textarea
+          id="note"
+          placeholder="Jot something down. It stays in this browser."
+          aria-label="Quick note"
+        ></textarea>
+      </section>
+    </main>
+
+    <script is:inline>
+      const $ = (id) => document.getElementById(id),
+        pad = (n) => String(n).padStart(2, "0");
+      const store = {
+        get(k) {
+          try {
+            return localStorage.getItem(k) || "";
+          } catch (e) {
+            return "";
+          }
+        },
+        set(k, v) {
+          try {
+            localStorage.setItem(k, v);
+          } catch (e) {}
+        },
+      };
+      function tick() {
+        const d = new Date(),
+          h = d.getHours();
+        $("time").innerHTML = pad(h) + "<span>:</span>" + pad(d.getMinutes());
+        $("date").textContent = d.toLocaleDateString(undefined, {
+          weekday: "long",
+          month: "long",
+          day: "numeric",
+        });
+        const g =
+          h < 5
+            ? "Good night"
+            : h < 12
+              ? "Good morning"
+              : h < 18
+                ? "Good afternoon"
+                : "Good evening";
+        $("greet").textContent = g;
+        $("headline").innerHTML =
+          g + ".<br><span>What are you looking for?</span>";
+        const dp = Math.round((h * 60 + d.getMinutes()) / 14.4);
+        $("dayp").textContent = dp + "%";
+        $("daym").style.width = dp + "%";
+        const y = d.getFullYear(),
+          yp = Math.round(
+            ((d - new Date(y, 0, 1)) /
+              (new Date(y + 1, 0, 1) - new Date(y, 0, 1))) *
+              100,
+          );
+        $("yearp").textContent = yp + "%";
+        $("yearm").style.width = yp + "%";
+        const wk = Math.ceil(
+          ((d - new Date(y, 0, 1)) / 864e5 + new Date(y, 0, 1).getDay() + 1) /
+            7,
+        );
+        $("wk").textContent = "Week " + wk;
+      }
+      tick();
+      setInterval(tick, 15000);
+      $("sf").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const v = $("q").value.trim();
+        if (!v) return;
+        if (/^https?:\/\//i.test(v)) location.href = v;
+        else if (/^[^\s]+\.[a-z]{2,}(\/\S*)?$/i.test(v))
+          location.href = "https://" + v;
+        else
+          location.href =
+            "https://www.google.com/search?q=" + encodeURIComponent(v);
+      });
+      ["focus", "note"].forEach((id) => {
+        const el = $(id);
+        el.value = store.get(id);
+        el.addEventListener("input", () => store.set(id, el.value));
+      });
+      let left = 1500,
+        run = null;
+      const draw = () =>
+        ($("tt").textContent =
+          pad(Math.floor(left / 60)) + ":" + pad(left % 60));
+      $("tb").addEventListener("click", () => {
+        if (run) {
+          clearInterval(run);
+          run = null;
+          $("tb").textContent = "Resume";
+          return;
+        }
+        if (left <= 0) left = 1500;
+        $("tb").textContent = "Pause";
+        run = setInterval(() => {
+          left--;
+          draw();
+          if (left <= 0) {
+            clearInterval(run);
+            run = null;
+            $("tb").textContent = "Restart";
+          }
+        }, 1000);
+      });
+    </script>
+  </body>
+</html>
