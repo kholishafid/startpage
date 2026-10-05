@@ -126,14 +126,26 @@ import "../styles/global.css";
         </ul>
       </nav>
 
-      <section class="tile timer" aria-label="Focus timer">
-        <div class="small">Focus timer</div>
-        <div class="t" id="tt">
-          25:00
+      <section class="tile weather" aria-label="Current weather">
+        <div class="weather-head">
+          <div class="weather-location" id="weather-location">Your location</div>
+          <button class="weather-refresh" id="weather-refresh" type="button" aria-label="Refresh weather">
+            Refresh
+          </button>
         </div>
-        <button id="tb" type="button">
-          Start
-        </button>
+
+        <div class="weather-main">
+          <div>
+            <div class="weather-temperature" id="weather-temperature">--°</div>
+            <div class="weather-condition" id="weather-condition">Getting weather...</div>
+          </div>
+          <img
+            class="weather-icon"
+            id="weather-icon"
+            src="/weather_icons/icons8-sun-48.png"
+            alt=""
+          />
+        </div>
       </section>
 
       <section class="tile notes">
@@ -218,30 +230,103 @@ import "../styles/global.css";
         el.value = store.get(id);
         el.addEventListener("input", () => store.set(id, el.value));
       });
-      let left = 1500,
-        run = null;
-      const draw = () =>
-        ($("tt").textContent =
-          pad(Math.floor(left / 60)) + ":" + pad(left % 60));
-      $("tb").addEventListener("click", () => {
-        if (run) {
-          clearInterval(run);
-          run = null;
-          $("tb").textContent = "Resume";
+      const weatherDescriptions = {
+        0: ["Clear sky", "icons8-sun-48.png"],
+        1: ["Mainly clear", "icons8-partly-cloudy-day-48.png"],
+        2: ["Partly cloudy", "icons8-partly-cloudy-day-48.png"],
+        3: ["Overcast", "icons8-clouds-48.png"],
+        45: ["Foggy", "icons8-haze-48.png"],
+        48: ["Rime fog", "icons8-haze-48.png"],
+        51: ["Light drizzle", "icons8-light-rain-48.png"],
+        53: ["Drizzle", "icons8-rain-48.png"],
+        55: ["Heavy drizzle", "icons8-heavy-rain-48.png"],
+        61: ["Light rain", "icons8-light-rain-48.png"],
+        63: ["Rain", "icons8-moderate-rain-48.png"],
+        65: ["Heavy rain", "icons8-heavy-rain-48.png"],
+        71: ["Light snow", "icons8-light-snow-48.png"],
+        73: ["Snow", "icons8-snow-48.png"],
+        75: ["Heavy snow", "icons8-snow-storm-48.png"],
+        80: ["Rain showers", "icons8-rainfall-48.png"],
+        81: ["Rain showers", "icons8-torrential-rain-48.png"],
+        82: ["Heavy showers", "icons8-torrential-rain-48.png"],
+        95: ["Thunderstorm", "icons8-storm-48.png"],
+        96: ["Thunderstorm with hail", "icons8-storm-with-heavy-rain-48.png"],
+        99: ["Thunderstorm with hail", "icons8-storm-with-heavy-rain-48.png"],
+      };
+
+      function setWeatherMessage(message) {
+        $("weather-condition").textContent = message;
+        $("weather-refresh").textContent = "Try again";
+      }
+
+      async function loadWeather() {
+        $("weather-refresh").disabled = true;
+        $("weather-refresh").textContent = "Locating...";
+        if (!navigator.geolocation) {
+          setWeatherMessage("Location is not supported");
+          $("weather-refresh").disabled = false;
           return;
         }
-        if (left <= 0) left = 1500;
-        $("tb").textContent = "Pause";
-        run = setInterval(() => {
-          left--;
-          draw();
-          if (left <= 0) {
-            clearInterval(run);
-            run = null;
-            $("tb").textContent = "Restart";
-          }
-        }, 1000);
-      });
+
+        navigator.geolocation.getCurrentPosition(
+          async ({ coords }) => {
+            try {
+              const params = new URLSearchParams({
+                latitude: coords.latitude,
+                longitude: coords.longitude,
+                current: "temperature_2m,weather_code",
+                timezone: "auto",
+              });
+              const response = await fetch(
+                `https://api.open-meteo.com/v1/forecast?${params}`,
+              );
+              if (!response.ok) throw new Error(`HTTP ${response.status}`);
+              const data = await response.json();
+              const current = data.current;
+              const [condition, icon] = weatherDescriptions[current.weather_code] || [
+                "Unknown",
+                "icons8-windy-weather-48.png",
+              ];
+              let location = "Your location";
+              try {
+                const locationResponse = await fetch(
+                  `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${coords.latitude}&longitude=${coords.longitude}&localityLanguage=en`,
+                );
+                if (locationResponse.ok) {
+                  const locationData = await locationResponse.json();
+                  location =
+                    locationData.city ||
+                    locationData.locality ||
+                    locationData.principalSubdivision ||
+                    location;
+                }
+              } catch (error) {
+                console.error("Location lookup failed:", error);
+              }
+              $("weather-location").textContent = location;
+              $("weather-icon").src = `/weather_icons/${icon}`;
+              $("weather-icon").alt = condition;
+              $("weather-temperature").textContent =
+                `${Math.round(current.temperature_2m)}°`;
+              $("weather-condition").textContent = condition;
+              $("weather-refresh").textContent = "Refresh";
+            } catch (error) {
+              console.error("Weather fetch failed:", error);
+              setWeatherMessage("Weather unavailable");
+            } finally {
+              $("weather-refresh").disabled = false;
+            }
+          },
+          () => {
+            setWeatherMessage("Location access needed");
+            $("weather-refresh").disabled = false;
+          },
+          { enableHighAccuracy: false, timeout: 10000, maximumAge: 900000 },
+        );
+      }
+
+      $("weather-refresh").addEventListener("click", loadWeather);
+      loadWeather();
 
       function debounce(func, wait) {
         let timeout;

@@ -57,7 +57,7 @@ body {
   gap: 16px;
   grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
   grid-template-rows: 200px 200px 210px;
-  grid-template-areas: "clock hero hero hero stats" "focus hero hero hero stats" "focus links links timer notes";
+  grid-template-areas: "clock hero hero hero stats" "focus hero hero hero stats" "focus links links weather notes";
 }
 .tile {
   background: var(--tile);
@@ -296,44 +296,64 @@ textarea:focus-visible {
   font-size: 18px;
   color: #fff;
 }
-.timer {
-  grid-area: timer;
-  background: var(--dark);
+.weather {
+  grid-area: weather;
+  background: linear-gradient(145deg, #5d9dde, #32679f);
   color: #fff;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  background-image:
-    radial-gradient(
-      circle at 30% 20%,
-      rgba(255, 255, 255, 0.08) 0 2px,
-      transparent 3px
-    ),
-    radial-gradient(
-      circle at 70% 60%,
-      rgba(255, 255, 255, 0.08) 0 3px,
-      transparent 4px
-    );
-  background-size: 38px 38px;
 }
-.timer .small {
+.weather .small,
+.weather-location,
+.weather-condition {
   color: rgba(255, 255, 255, 0.7);
 }
-.timer .t {
-  font-size: 44px;
+.weather-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.weather-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: space-between;
+}
+.weather-icon {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+}
+.weather-temperature {
+  font-size: 48px;
   font-weight: 600;
   letter-spacing: -0.04em;
+  line-height: 0.9;
 }
-.timer button {
-  align-self: flex-start;
+.weather-condition {
+  font-size: 13px;
+  margin-top: 7px;
+}
+.weather-refresh {
   border: 0;
   border-radius: 999px;
-  background: #fff;
-  color: #111;
-  padding: 9px 18px;
+  background: none;
+  color: rgba(255, 255, 255, 0.75);
+  padding: 0;
   font: inherit;
-  font-weight: 500;
+  font-size: 12px;
   cursor: pointer;
+}
+.weather-refresh:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+.weather-location {
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .notes {
   grid-area: notes;
@@ -407,7 +427,7 @@ textarea:focus-visible {
     grid-template-columns: 1fr 1fr;
     grid-template-rows: none;
     grid-auto-rows: minmax(180px, auto);
-    grid-template-areas: "hero hero" "clock stats" "focus timer" "links links" "notes notes";
+    grid-template-areas: "hero hero" "clock stats" "focus weather" "links links" "notes notes";
   }
   .hero {
     min-height: 340px;
@@ -422,7 +442,7 @@ textarea:focus-visible {
 @media (max-width: 560px) {
   .grid {
     grid-template-columns: 1fr;
-    grid-template-areas: "hero" "clock" "stats" "focus" "timer" "links" "notes";
+    grid-template-areas: "hero" "clock" "stats" "focus" "weather" "links" "notes";
   }
   .stats {
     gap: 22px;
